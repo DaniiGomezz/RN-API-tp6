@@ -1,70 +1,80 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+// App.js
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, View, Text, FlatList, StyleSheet } from 'react-native';
+import axios from 'axios';
+import { ScaledSheet, scale } from 'react-native-size-matters';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const App = () => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('https://jsonplaceholder.typicode.com/users');
+        setData(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error(error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const renderItem = ({ item }) => (
+    <View style={styles.itemContainer}>
+      <Text style={styles.itemTitle}>{item.name}</Text>
+      <Text style={styles.itemSubtitle}>{item.email}</Text>
+    </View>
   );
-}
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  return (
+    <SafeAreaView style={styles.container}>
+      {loading ? (
+        <Text style={styles.loadingText}>Loading...</Text>
+      ) : (
+        <FlatList
+          data={data}
+          keyExtractor={item => item.id.toString()}
+          renderItem={renderItem}
+        />
+      )}
+    </SafeAreaView>
+  );
+};
+
+const styles = ScaledSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+    padding: '10@s',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  itemContainer: {
+    backgroundColor: '#ffffff',
+    padding: '15@s',
+    marginBottom: '10@s',
+    borderRadius: '5@s',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  itemTitle: {
+    fontSize: '18@s',
+    fontWeight: 'bold',
+  },
+  itemSubtitle: {
+    fontSize: '14@s',
+    color: '#555555',
+  },
+  loadingText: {
+    fontSize: '20@s',
+    textAlign: 'center',
+    marginTop: '20@s',
   },
 });
+
+export default App;
